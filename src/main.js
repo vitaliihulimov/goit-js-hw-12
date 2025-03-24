@@ -16,6 +16,7 @@ const loadMoreBtn = document.querySelector('#load-more');
 let currentPage = 1;
 let currentQuery = '';
 let totalHits = 0;
+const IMAGES_PER_PAGE = 15;
 
 searchForm.addEventListener('submit', async event => {
   event.preventDefault();
@@ -30,6 +31,7 @@ searchForm.addEventListener('submit', async event => {
     });
     return;
   }
+
   clearGallery();
   currentPage = 1;
   toggleLoadMoreButton(false);
@@ -43,7 +45,9 @@ searchForm.addEventListener('submit', async event => {
     totalHits = total;
     renderGallery(hits);
 
-    if (hits.length < totalHits) toggleLoadMoreButton(true);
+    if (hits.length > 0 && hits.length < totalHits) {
+      toggleLoadMoreButton(true);
+    }
   } catch (error) {
     iziToast.error({
       title: 'Error',
@@ -51,19 +55,20 @@ searchForm.addEventListener('submit', async event => {
       position: 'topRight',
     });
   } finally {
-    hideLoader;
+    hideLoader();
   }
 });
 
 loadMoreBtn.addEventListener('click', async () => {
   currentPage++;
   showLoader();
+
   try {
     const { hits } = await fetchImages(currentQuery, currentPage);
     renderGallery(hits);
     smoothScroll();
 
-    if (currentPage * 15 >= totalHits) {
+    if (currentPage * IMAGES_PER_PAGE >= totalHits) {
       toggleLoadMoreButton(false);
       iziToast.info({
         title: 'End',
